@@ -1,6 +1,5 @@
-package com.eyup.inventory.Repository;
+package com.eyup.inventory.repository;
 
-import com.eyup.inventory.model.Product;
 import com.eyup.inventory.model.ProductTemplate;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,8 +1,9 @@
 package com.eyup.inventory.service;
 
-import com.eyup.inventory.Repository.CategoryRepository;
-import com.eyup.inventory.Repository.ProductRepository;
-import com.eyup.inventory.Repository.ProductTemplateRepository;
+import com.eyup.inventory.exception.EntityNotFoundException;
+import com.eyup.inventory.repository.CategoryRepository;
+import com.eyup.inventory.repository.ProductRepository;
+import com.eyup.inventory.repository.ProductTemplateRepository;
 import com.eyup.inventory.dto.ProductCreateDto;
 import com.eyup.inventory.dto.ProductUpdateDto;
 import com.eyup.inventory.dto.ProductViewDto;
@@ -13,15 +14,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class ProductService {
 
-    private ProductRepository productRepository;
-    private ProductTemplateRepository productTemplateRepository;
-    private CategoryRepository categoryRepository;
-    public ProductService(ProductRepository productRepository,CategoryRepository categoryRepository,ProductTemplateRepository productTemplateRepository) {
+    private final ProductRepository productRepository;
+    private final ProductTemplateRepository productTemplateRepository;
+    private final CategoryRepository categoryRepository;
+
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, ProductTemplateRepository productTemplateRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productTemplateRepository = productTemplateRepository;
@@ -32,16 +32,18 @@ public class ProductService {
     }
 
     public ProductViewDto getById(Long id) {
-        Product product =  productRepository.findById(id).orElseThrow(() ->
-                new RuntimeException("Product not found with id: " + id));
+        Product product = productRepository.findById(id).orElseThrow(() ->
+                new EntityNotFoundException("Product not found with id: " + id));
         return ProductViewDto.of(product);
     }
 
     public ProductViewDto createProduct(ProductCreateDto newProduct) {
+        Category category = categoryRepository.findById(newProduct.getCategoryId())
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + newProduct.getCategoryId()));
 
-        Category category = categoryRepository.findById(newProduct.getCategoryId()).orElseThrow(() -> new RuntimeException("Category not found"));
+        ProductTemplate productTemplate = productTemplateRepository.findById(newProduct.getProductTemplateId())
+                .orElseThrow(() -> new EntityNotFoundException("Product template not found with id: " + newProduct.getProductTemplateId()));
 
-        ProductTemplate productTemplate = productTemplateRepository.findById(newProduct.getProductTemplateId()).orElseThrow(() -> new RuntimeException("Product template not found"));
         Product product = new Product(
                 newProduct.getName(),
                 newProduct.getRefCode(),
@@ -58,7 +60,7 @@ public class ProductService {
 
     public ProductViewDto updateProduct(ProductUpdateDto updateProduct, Long id) {
         Product product = productRepository.findById(id).orElseThrow(() ->
-                                new RuntimeException("Product not found with id: " + id));
+                new EntityNotFoundException("Product not found with id: " + id));
 
         product.setName(updateProduct.getName());
         product.setDescription(updateProduct.getDescription());
@@ -69,19 +71,16 @@ public class ProductService {
 
         if (updateProduct.getProductTemplateId() != null) {
             ProductTemplate productTemplate = productTemplateRepository.findById(updateProduct.getProductTemplateId())
-                    .orElseThrow(() -> new RuntimeException("Product template not found with id: " + updateProduct.getProductTemplateId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Product template not found with id: " + updateProduct.getProductTemplateId()));
             product.setProductTemplate(productTemplate);
         }
 
         if (updateProduct.getCategoryId() != null) {
             Category category = categoryRepository.findById(updateProduct.getCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Category not found with id: " + updateProduct.getCategoryId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + updateProduct.getCategoryId()));
             product.setCategory(category);
         }
 
-
         return ProductViewDto.of(product);
     }
-
-
 }

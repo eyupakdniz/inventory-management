@@ -32,6 +32,7 @@ public class Product {
         this.productTemplate = productTemplate;
     }
 
+
     public Long getId() {
         return id;
     }

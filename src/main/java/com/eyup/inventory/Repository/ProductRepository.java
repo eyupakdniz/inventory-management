@@ -1,4 +1,4 @@
-package com.eyup.inventory.Repository;
+package com.eyup.inventory.repository;
 
 import com.eyup.inventory.model.Product;
 import org.springframework.data.domain.Page;

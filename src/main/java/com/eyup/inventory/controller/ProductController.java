@@ -4,6 +4,8 @@ import com.eyup.inventory.dto.ProductCreateDto;
 import com.eyup.inventory.dto.ProductUpdateDto;
 import com.eyup.inventory.dto.ProductViewDto;
 import com.eyup.inventory.service.ProductService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -26,26 +28,46 @@ public class ProductController {
     public ResponseEntity<Page<ProductViewDto>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
+        if (page < 0 || size <= 0) {
+            throw new IllegalArgumentException("Sayfa numarası sıfırdan küçük olamaz ve boyut sıfırdan büyük olmalıdır.");
+        }
+
         Pageable pageable = (Pageable) PageRequest.of(page, size);
-        Page<ProductViewDto> products = productService.getAllActive((org.springframework.data.domain.Pageable) pageable);
+        Page<ProductViewDto> products =  productService.getAllActive((org.springframework.data.domain.Pageable) pageable);
         return ResponseEntity.ok(products);
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<ProductViewDto> getById(@RequestBody Long id){
-        return ResponseEntity.ok(productService.getById(id));
+    public ResponseEntity<ProductViewDto> getById(@PathVariable Long id) {
+        ProductViewDto product = productService.getById(id);
+        if (product == null) {
+            throw new EntityNotFoundException("Ürün bulunamadı, id: " + id);
+        }
+        return ResponseEntity.ok(product);
     }
+
+
     @PostMapping("/create")
     public ResponseEntity<ProductViewDto> createProduct(@RequestBody ProductCreateDto newProduct) {
-        ProductViewDto createdProduct = productService.createProduct(newProduct);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+        try {
+            ProductViewDto createdProduct = productService.createProduct(newProduct);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+        } catch (DataIntegrityViolationException ex) {
+            throw new RuntimeException("Veritabanı hatası: " + ex.getMessage());
+        }
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ProductViewDto> updateProduct(@RequestBody ProductUpdateDto updateProductDto, @PathVariable Long id) {
-        ProductViewDto updatedProduct = productService.updateProduct(updateProductDto, id);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedProduct);
+        try {
+            ProductViewDto updatedProduct = productService.updateProduct(updateProductDto, id);
+            if (updatedProduct == null) {
+                throw new EntityNotFoundException("Ürün bulunamadı, id: " + id);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(updatedProduct);
+        } catch (DataIntegrityViolationException ex) {
+            throw new RuntimeException("Veritabanı hatası: " + ex.getMessage());
+        }
     }
-
 
 }
