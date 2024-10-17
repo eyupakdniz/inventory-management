@@ -3,6 +3,7 @@ package com.eyup.inventory.controller;
 import com.eyup.inventory.dto.ProductCreateDto;
 import com.eyup.inventory.dto.ProductUpdateDto;
 import com.eyup.inventory.dto.ProductViewDto;
+import com.eyup.inventory.model.Product;
 import com.eyup.inventory.service.ProductService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;

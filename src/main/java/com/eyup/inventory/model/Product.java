@@ -22,16 +22,79 @@ public class Product {
     @JoinColumn(name = "template_id")
     private ProductTemplate productTemplate;
 
-    public Product(String name, String refCode, String description, Integer quantity, Double purchasePrice, Category category, ProductTemplate productTemplate) {
-        this.name = name;
-        this.refCode = refCode;
-        this.description = description;
-        this.quantity = quantity;
-        this.purchasePrice = purchasePrice;
-        this.category = category;
-        this.productTemplate = productTemplate;
+    private Product(ProductBuilder builder) {
+        this.id = builder.id;
+        this.refCode = builder.refCode;
+        this.name = builder.name;
+        this.description = builder.description;
+        this.quantity = builder.quantity;
+        this.purchasePrice = builder.purchasePrice;
+        this.active = builder.active;
+        this.category = builder.category;
+        this.productTemplate = builder.productTemplate;
     }
 
+
+    public static class ProductBuilder {
+        private Long id;
+        private String refCode;
+        private String name;
+        private String description;
+        private Integer quantity;
+        private Double purchasePrice;
+        private Boolean active;
+        private Category category;
+        private ProductTemplate productTemplate;
+
+        public ProductBuilder setId(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public ProductBuilder setRefCode(String refCode) {
+            this.refCode = refCode;
+            return this;
+        }
+
+        public ProductBuilder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public ProductBuilder setDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public ProductBuilder setQuantity(Integer quantity) {
+            this.quantity = quantity;
+            return this;
+        }
+
+        public ProductBuilder setPurchasePrice(Double purchasePrice) {
+            this.purchasePrice = purchasePrice;
+            return this;
+        }
+
+        public ProductBuilder setActive(Boolean active) {
+            this.active = active;
+            return this;
+        }
+
+        public ProductBuilder setCategory(Category category) {
+            this.category = category;
+            return this;
+        }
+
+        public ProductBuilder setProductTemplate(ProductTemplate productTemplate) {
+            this.productTemplate = productTemplate;
+            return this;
+        }
+
+        public Product build() {
+            return new Product(this);
+        }
+    }
 
     public Long getId() {
         return id;

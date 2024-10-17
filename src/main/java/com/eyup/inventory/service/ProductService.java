@@ -44,30 +44,23 @@ public class ProductService {
         ProductTemplate productTemplate = productTemplateRepository.findById(newProduct.getProductTemplateId())
                 .orElseThrow(() -> new EntityNotFoundException("Product template not found with id: " + newProduct.getProductTemplateId()));
 
-        Product product = new Product(
-                newProduct.getName(),
-                newProduct.getRefCode(),
-                newProduct.getDescription(),
-                newProduct.getQuantity(),
-                newProduct.getPurchasePrice(),
-                category,
-                productTemplate
-        );
+        Product product = new Product.ProductBuilder()
+                .setName(newProduct.getName())
+                .setRefCode(newProduct.getRefCode())
+                .setDescription(newProduct.getDescription())
+                .setQuantity(newProduct.getQuantity())
+                .setPurchasePrice(newProduct.getPurchasePrice())
+                .setCategory(category)
+                .setProductTemplate(productTemplate)
+                .build();
 
-        final Product savedProduct = productRepository.save(product);
-        return ProductViewDto.of(savedProduct);
+        Product saveBuild = productRepository.save(product);
+        return ProductViewDto.of(saveBuild);
     }
 
     public ProductViewDto updateProduct(ProductUpdateDto updateProduct, Long id) {
         Product product = productRepository.findById(id).orElseThrow(() ->
                 new EntityNotFoundException("Product not found with id: " + id));
-
-        product.setName(updateProduct.getName());
-        product.setDescription(updateProduct.getDescription());
-        product.setQuantity(updateProduct.getQuantity());
-        product.setRefCode(updateProduct.getRefCode());
-        product.setPurchasePrice(updateProduct.getPurchasePrice());
-        product.setActive(updateProduct.getActive());
 
         if (updateProduct.getProductTemplateId() != null) {
             ProductTemplate productTemplate = productTemplateRepository.findById(updateProduct.getProductTemplateId())
@@ -81,6 +74,17 @@ public class ProductService {
             product.setCategory(category);
         }
 
-        return ProductViewDto.of(product);
+        Product productBuild = new Product.ProductBuilder()
+            .setName(updateProduct.getName())
+            .setDescription(updateProduct.getDescription())
+            .setQuantity(updateProduct.getQuantity())
+            .setRefCode(updateProduct.getRefCode())
+            .setPurchasePrice(updateProduct.getPurchasePrice())
+            .setActive(updateProduct.getActive())
+                .build();
+
+        productBuild.setId(product.getId());
+        Product saveBuild = productRepository.save(productBuild);
+        return ProductViewDto.of(saveBuild);
     }
 }
